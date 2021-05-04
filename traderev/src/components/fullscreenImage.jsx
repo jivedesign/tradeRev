@@ -12,26 +12,44 @@ const StyledFullScreenImageContainer = styled.div`
 `;
 
 const StyledFullscreenImage = styled.img`
-  max-height: 90%;  
-  max-width: 90%;
-  margin: 20px 50px 50px 50px;
+  max-height: 80%;  
+  max-width: 80%;
 `;
 
 const StyledControlBar = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  left: 0;
+  right: 0;
+  height: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const StyledFullscreenBaseLayer = styled.div`
+  height: 100%;
+  width: 100%;
+`;
+
+const StyledPhotoDescription = styled.div`
+  text-align: center;
+  color: white;
+  margin-top: 10px;
 `;
 
 const StyledCloseButton = styled.div`
   display: block;
   color: white;
   cursor: pointer;
-  margin: 10px;
+  text-transform: uppercase;
+  font-weight: bold;
 `;
 
 const FullscreenImage = (props) => {
-  const { imageObjects, currentImageIndex, onCloseClick, onNextClick, onPrevClick } = props;
+  const { imageObjects, currentImageIndex, onCloseClick } = props;
 
   const [imageIndex, setImageIndex] = useState(null);
   const [currentImage, setCurrentImage] = useState(imageObjects[currentImageIndex]);
@@ -57,15 +75,25 @@ const FullscreenImage = (props) => {
     setCurrentImage(imageObjects[nextIndex]);
   }, [imageIndex, imageObjects]);
 
+  const handleCloseClick = () => {
+    onCloseClick(currentImage.id);
+  }
+
   return (
     <StyledFullScreenImageContainer>
-      <StyledControlBar>
-        <Control onControlClick={() => handleControlClick('prev')}>Prev</Control>
-        <p>Photo {imageIndex + 1} of {imageObjects.length}</p>
-        <StyledCloseButton onClick={onCloseClick}>Close</StyledCloseButton>
-        <Control onControlClick={() => handleControlClick('next')}>Next</Control>
-      </StyledControlBar>
-      {currentImage && <StyledFullscreenImage src={currentImage.urls.regular} />}
+      <StyledFullscreenBaseLayer>
+        <StyledCloseButton onClick={handleCloseClick}>Close</StyledCloseButton>
+          <StyledPhotoDescription>
+          <div>[{imageIndex + 1}/{imageObjects.length}] - {currentImage.alt_description}</div>
+        </StyledPhotoDescription>
+        {currentImage && (
+          <StyledControlBar>
+            <Control onControlClick={() => handleControlClick('prev')}>Prev</Control>
+            <StyledFullscreenImage src={currentImage.urls.regular} />
+            <Control onControlClick={() => handleControlClick('next')}>Next</Control>
+          </StyledControlBar>
+        )}
+      </StyledFullscreenBaseLayer>
     </StyledFullScreenImageContainer>
   );
 }

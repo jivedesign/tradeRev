@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import useImageHook from '../hooks/imageHook';
 import ImageTile from './imageTile';
@@ -9,6 +9,7 @@ const StyledGridContainer = styled.div`
   width: 100%;
   height: 100%;
   padding: 5px;
+  overflow: scroll;
 `;
 
 const StyledGrid = styled.div`
@@ -34,10 +35,12 @@ const Grid = () => {
   const [fullscreenImageObject, setFullscreenImageObject] = useState(null);
   const [fullscreenImageIndex, setFullscreenImageIndex] = useState(null);
 
-  const { init, imageObjects, getImageObjects, getNextImageObject, getPrevImageObject } = useImageHook();
+  const listInnerRef = useRef();
+
+  const { imageObjects, getAndAppendNextImageListPage, getNextImageObject, getPrevImageObject } = useImageHook();
 
   useEffect(() => {
-    if (hasInitialized && imageObjects.length) {
+    if (hasInitialized && imageObjects) {
       setImages(imageObjects);
       setIsLoading(false);
     };
@@ -47,25 +50,22 @@ const Grid = () => {
     if (!hasInitialized) {
       setIsLoading(true);
 
-      init();
+      getAndAppendNextImageListPage();
       setHasInitialized(true);
     }
   }, [hasInitialized]);
 
-
-  const handleGetImages = async () => {
-    const newImages = await getImages(currentPage);
-    console.log('-- IMAGES;', images)
-    setImages(images.concat(newImages));
+  const handleScroll = () => {
+    if (listInnerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = listInnerRef.current;
+      if (scrollTop + clientHeight === scrollHeight) {
+        handleGetImages();
+      }
+    }
   }
 
-  const handleScroll = (e) => {
-    const bottom = e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight;
-    console.log('- SCR');
-    if (bottom) {
-      // handleGetImages
-      console.log('- BTTOm');
-    }
+  const handleGetImages = async () => {
+    getAndAppendNextImageListPage();
   }
 
   const handleShowFullscreenImage = (imageObj, index) => {
@@ -74,34 +74,20 @@ const Grid = () => {
     setShowFullscreen(true);
   }
 
-  const handleShowNextFullscreenImage = useCallback(() => {
-    const nextImageIndex = fullscreenImageIndex + 1;
-    setFullscreenImageIndex(nextImageIndex);
+  const jumpToPhotoInGrid = (imageId) => {
+      var top = document.getElementById(imageId).offsetTop; 
+      listInnerRef.current.scrollTo(0, top);
+  }
 
-    // const nextImage = getNextImageObject(nextImageIndex);
-    
-    setFullscreenImageObject(images[nextImageIndex]);
-    setShowFullscreen(true);
-  }, [setFullscreenImageObject, setShowFullscreen, fullscreenImageIndex])
-
-  const handleShowPrevFullscreenImage = useCallback(() => {
-    const prevImageIndex = fullscreenImageIndex - 1;
-    setFullscreenImageIndex(prevImageIndex);
-
-    const prevImage = getPrevImageObject(prevImageIndex);
-    
-    setFullscreenImageObject(prevImage);
-    setShowFullscreen(true);
-  }, [getNextImageObject, setFullscreenImageObject, setShowFullscreen, fullscreenImageIndex])
-
-  const handleCloseFullscreenImage = useCallback(() => {
+  const handleCloseFullscreenImage = useCallback((imageId) => {
     setFullscreenImageObject(null);
     setFullscreenImageIndex(null);
     setShowFullscreen(false);
+    jumpToPhotoInGrid(imageId);
   }, []);
 
   return (
-    <StyledGridContainer onScroll={handleScroll}>
+    <StyledGridContainer ref={listInnerRef} onScroll={() => handleScroll()}>
       <StyledGrid>
         {images.map((image, index) => <ImageTile key={image.id} index={index} imageData={image} onClick={handleShowFullscreenImage} />)}
       </StyledGrid>
@@ -114,6 +100,7 @@ const Grid = () => {
           onCloseClick={handleCloseFullscreenImage}
         />)
       }
+      <LoadingComponent>loading...</LoadingComponent>
     </StyledGridContainer>
   )
 

@@ -5,23 +5,15 @@ const useImageHook = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [imageObjects, setImageObjects] = useState([]);
 
-  const init = async () => {
-    if (currentPage === 0) {
-      const returnedImageObjects = await getNextImageListPage();
-      
-      setImageObjects(returnedImageObjects.data);
-    }
-  }
-
   const getImageObjects = () => {
     return imageObjects;
   }
 
   const getAndAppendNextImageListPage = async () => {
-    setCurrentPage(currentPage += 1);
+    setCurrentPage(currentPage + 1);
     
-    const nextImageObjects = await getImages(currentPage += 1);
-    const newImageObjectsList = imageObjects.concat(nextImageObjects);
+    const nextImageObjects = await getImages(currentPage + 1);
+    const newImageObjectsList = imageObjects.concat(nextImageObjects.data);
     setImageObjects(newImageObjectsList)
 
     return newImageObjectsList;
@@ -47,7 +39,6 @@ const useImageHook = () => {
   }
 
   return {
-    init,
     imageObjects,
     getImageObjects,
     getNextImageListPage,

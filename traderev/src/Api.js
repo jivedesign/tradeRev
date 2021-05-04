@@ -7,7 +7,7 @@ const headers = {
   Authorization: `Client-ID ${ACCESS_KEY}`
 };
 
-const PER_PAGE = 30;
+const PER_PAGE = 10;
 
 export const getImages = async (page = 0) => {
   try {
