@@ -63,12 +63,14 @@ const FullscreenImage = (props) => {
 
   const handleControlClick = useCallback((direction) => {
     let nextIndex;
-    if (imageIndex === imageObjects.length - 1 && direction === 'next') {
+    const index = imageIndex === null ? 0 : imageIndex;
+
+    if (index === imageObjects.length - 1 && direction === 'next') {
       nextIndex = 0;
-    } else if (imageIndex === 0 && direction === 'prev') {
+    } else if (index === 0 && direction === 'prev') {
       nextIndex = imageObjects.length - 1;
     } else {
-      nextIndex = direction === 'next' ? imageIndex + 1 : imageIndex - 1;
+      nextIndex = direction === 'next' ? index + 1 : index - 1;
     }
 
     setImageIndex(nextIndex);

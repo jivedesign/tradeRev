@@ -13,10 +13,8 @@ const StyledGridContainer = styled.div`
 
 const StyledGrid = styled.div`
 width: 100%;
-@media screen and (min-width: 1000px) {
-  width: 1200px;
-  margin: 0 auto;
-}
+display: flex;
+flex-wrap: wrap;
 `;
 
 const LoadingComponent = styled.div`
@@ -51,13 +49,14 @@ const Grid = () => {
       getAndAppendNextImageListPage();
       setHasInitialized(true);
     }
-  }, [hasInitialized]);
+  }, [hasInitialized, getAndAppendNextImageListPage]);
 
   const handleScroll = () => {
     if (listInnerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = listInnerRef.current;
       if (scrollTop + clientHeight === scrollHeight) {
         handleGetImages();
+        setIsLoading(true);
       }
     }
   }
@@ -87,9 +86,8 @@ const Grid = () => {
   return (
     <StyledGridContainer ref={listInnerRef} onScroll={() => handleScroll()}>
       <StyledGrid>
-        {images.map((image, index) => <ImageTile key={image.id} index={index} imageData={image} onClick={handleShowFullscreenImage} />)}
+        {images.map((image, index) => <ImageTile key={`${image.id}-${index}`} index={index} imageData={image} onClick={handleShowFullscreenImage} />)}
       </StyledGrid>
-      {isLoading && <LoadingComponent>loading...</LoadingComponent>}
       {showFullscreen && (
         <FullscreenImage
           imageObjects={images}
@@ -98,7 +96,7 @@ const Grid = () => {
           onCloseClick={handleCloseFullscreenImage}
         />)
       }
-      <LoadingComponent>loading...</LoadingComponent>
+      {isLoading && <LoadingComponent>loading...</LoadingComponent>}
     </StyledGridContainer>
   )
 
